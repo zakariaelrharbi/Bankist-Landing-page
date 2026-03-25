@@ -10,6 +10,7 @@ const btnsOpenModal = document.querySelectorAll('.btn--show-modal');
 // selection lean more button
 const btnScrollTo = document.querySelector('.btn--scroll-to');
 const section1 = document.querySelector('#section--1');
+const nav = document.querySelector('nav')
 
 const openModal = function () {
   modal.classList.remove('hidden');
@@ -86,3 +87,93 @@ navigation.addEventListener('mouseover', function(e){
 navigation.addEventListener('mouseout', function(e){
 handleHover(e, 1)
 })
+
+// // sticky navigation
+// const initialCoords = section1.offsetTop;
+
+// window.addEventListener('scroll', function () {
+//   if (window.scrollY > initialCoords) {
+//     nav.classList.add('sticky');
+//   } else {
+//     nav.classList.remove('sticky');
+//   }
+// });
+
+// sticky navigation : intersection observer 
+// 1- to use intersection observer we need to create one
+// call back function
+// const obsCallBack = function(entries, obserever){
+//   entries.forEach(entry => {
+//     console.log(entry)
+//   })
+// }
+// // options object 
+// const obsOptions = {
+//   // object option needs two element 
+//   // 1 root the element that the target intersecting or null to interact with the whole page
+//   root : null,
+//   // 2 treshold which the percentage of intersection that which the obersever callback function will be called 
+//   threshold: 0.1 // which 10%
+// }
+// // we need to pass in call back function and options object 
+// const observer = new IntersectionObserver(obsCallBack ,obsOptions);
+// //  now we have to use the observer to observe a certain target use observe method
+// // inside the method we call the target 
+// observer.observe(section1)
+
+const header = document.querySelector('.header')
+const navHeight = nav.getBoundingClientRect().height;
+
+const stickyNav = function(entries){
+  // distruc to get first element of entries
+  const [entry] = entries;
+  if(!entry.isIntersecting) nav.classList.add('sticky');
+  else nav.classList.remove('sticky')
+
+}
+Option ={
+  root:null,
+  theshold :0,
+  rootMargin: `-${navHeight}px`
+}
+const headerObserver = new IntersectionObserver(stickyNav, Option )
+headerObserver.observe(header)
+
+//  show up setcions 
+const allSection = document.querySelectorAll('.section')
+const revealSection = function(entries, obserever){
+  const [entry] = entries;
+  if(!entry.isIntersecting) return
+  entry.target.classList.remove('section--hidden')
+  obserever.unobserve(entry.target)
+}
+const sectionObserver = new IntersectionObserver(revealSection, {
+  root : null,
+  threshold:0.15,
+});
+
+allSection.forEach(function(section){
+  section.classList.add('section--hidden')
+  sectionObserver.observe(section);
+})
+
+
+//  lazy loading images 
+const imgTargets = document.querySelectorAll('img[data-src]')
+Option = {
+  root :null,
+  threshold:0
+}
+const revealImage = function(entries, observer){
+  const [entry] = entries
+  if(!entry.isIntersecting) return
+
+  // replace  src with data-src
+  entry.target.src = entry.target.dataset.src;
+  entry.target.addEventListener('load', function(){
+    entry.target.classList.remove('lazy-img')
+  })
+  observer.unobserve(entry.target)
+}
+const imageObserver = new IntersectionObserver(revealImage, Option)
+imgTargets.forEach(img => imageObserver.observe(img))
